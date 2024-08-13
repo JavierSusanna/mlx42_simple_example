@@ -1,5 +1,5 @@
-#ifndef STUFF_H
-# define STUFF_H
+#ifndef STARK_H
+# define STARK_H
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -13,14 +13,15 @@
 #include <fcntl.h>
 # include "../MLX42/include/MLX42/MLX42.h"
 
-#define WIDTH 1280
-#define HEIGHT 960
+#define WIDTH 640
+#define HEIGHT 640
 
 typedef struct s_data
 {
-	mlx_t			*mlx;
-	mlx_image_t		*img;
-	uint32_t color;
+	mlx_t		*mlx;
+	mlx_image_t	*img;
+	uint32_t	color;
+	int			pause;
 }	t_data;
 
 #endif

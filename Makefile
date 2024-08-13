@@ -1,12 +1,12 @@
 SHELL := /bin/bash
 
-NAME := undertest
+NAME := mlx42test
 SRC_DIR := src
 OBJ_DIR := obj
 MLX42_DIR := MLX42
 MLX42 := $(MLX42_DIR)/build/libmlx42.a
-HEADERS := $(shell find include -type f -name '*.h')
-SOURCES := $(shell find $(SRC_DIR) -type f -name '*.c')
+HEADERS := include/stark.h
+SOURCES := $(SRC_DIR)/main.c
 OBJECTS := $(patsubst $(SRC_DIR)%,$(OBJ_DIR)%,$(SOURCES:.c=.o))
 
 CC  := cc
