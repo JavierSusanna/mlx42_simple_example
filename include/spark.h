@@ -1,5 +1,5 @@
-#ifndef STARK_H
-# define STARK_H
+#ifndef SPARK_H
+# define SPARK_H
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -20,6 +20,8 @@ typedef struct s_data
 {
 	mlx_t		*mlx;
 	mlx_image_t	*img;
+	uint32_t	x;
+	uint32_t	y;
 	uint32_t	color;
 	int			pause;
 }	t_data;

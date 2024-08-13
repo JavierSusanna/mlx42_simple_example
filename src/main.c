@@ -1,8 +1,16 @@
-#include "../include/stark.h"
+#include "../include/spark.h"
 
 int32_t pixel_select(int32_t r, int32_t g, int32_t b, int32_t a)
 {
 	return (r << 24 | g << 16 | b << 8 | a);
+}
+
+float	randf(void)
+{
+	u_int32_t	rnd_int;
+
+	rnd_int = (rand() & ((1 << 23) - 1)) | (1 << 30);
+	return (-3.0f + *((float *) &rnd_int));
 }
 
 uint32_t	rainbow(unsigned int col)
@@ -41,38 +49,46 @@ void reset_img(void *param)
 	i = -1;
 	while (++i < WIDTH * HEIGHT)
 		*(ini + i) = (u_int32_t) (255U << 24);
-/*		*(ini + i) = (u_int32_t) (255U << 24) ((1U << 31) - 1U + (1U << 31)); */
-	*((int *) data->img->pixels) = WIDTH / 2;
-	*((int *) data->img->pixels + 1) = HEIGHT / 2;
-	*((int *) data->img->pixels + 2) = rand() % 1536;
 }
 
 void loop_hook_function(void *param)
 {
-	t_data *data;
-	int	x;
-	int	y;
+	t_data		*data;
+	uint32_t	dx;
+	uint32_t	dy;
 	int	ct;
-	int	col;
 	
 	data = (t_data *)param;
 	if (data->pause)
 		return ;
-	x = *((int *) data->img->pixels);
-	y = *((int *) data->img->pixels + 1);
-	col = *((int *) data->img->pixels + 2);
 	ct = 0;
 	while (++ct < (1 << 16))
 	{
 /*		col = (((u_int32_t) rand() << 8) | (255U)); */
-		col = (1536 + col + (rand() % 3) - 1) % 1536;
-		mlx_put_pixel(data->img, x, y, rainbow(col));
-		x = (x + (rand() % 3) - 1 + WIDTH) % WIDTH;
-		y = (y + (rand() % 3) - 1 + HEIGHT) % HEIGHT;
+		data->color = (1536 + data->color + (rand() % 3) - 1) % 1536;
+		if (mlx_is_mouse_down(data->mlx, MLX_MOUSE_BUTTON_LEFT))
+		{
+			mlx_get_mouse_pos(data->mlx, &dx, &dy);
+			dx -= data->x;
+			if (dx < - WIDTH / 2)
+				dx += WIDTH;
+			else if (dx > WIDTH / 2)
+				dx -= WIDTH;
+			if (dy < - HEIGHT / 2)
+				dy += HEIGHT;
+			else if (dy > HEIGHT / 2)
+				dy -= HEIGHT;
+		}
+		dx = 2 * rand() / RAND_MAX - 1;
+		dy = 2 * rand() / RAND_MAX - 1;
+		data->x += dx;
+		if (data->x < 0)
+			data->x += WIDTH;
+		data->y += dy;
+		if (data->y < 0)
+			data->y += HEIGHT;
+		mlx_put_pixel(data->img, data->x, data->y, rainbow(data->color));
 	}
-	*((int *) data->img->pixels) = x;
-	*((int *) data->img->pixels + 1) = y;
-	*((int *) data->img->pixels + 2) = col;
 }
 
 void ft_on_key(mlx_key_data_t keydata, void *param)
@@ -102,7 +118,10 @@ int main(int argc, char **argv)
 
 	data.mlx = mlx_init(WIDTH, HEIGHT, "Golden Sphere", true);
 	data.img = mlx_new_image(data.mlx, WIDTH, HEIGHT);
-	data.pause = 0;
+	data.x = WIDTH / 2;
+	data.y = HEIGHT / 2;
+	data.color = rand() % 1536;
+	data.pause = 1;
 	reset_img(&data);
 	printf("img reset\n");
 	mlx_image_to_window(data.mlx, data.img, 0, 0);

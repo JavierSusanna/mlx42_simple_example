@@ -5,7 +5,7 @@ SRC_DIR := src
 OBJ_DIR := obj
 MLX42_DIR := MLX42
 MLX42 := $(MLX42_DIR)/build/libmlx42.a
-HEADERS := include/stark.h
+HEADERS := include/spark.h
 SOURCES := $(SRC_DIR)/main.c
 OBJECTS := $(patsubst $(SRC_DIR)%,$(OBJ_DIR)%,$(SOURCES:.c=.o))
 
