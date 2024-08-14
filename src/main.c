@@ -50,43 +50,44 @@ void reset_img(void *param)
 	while (++i < WIDTH * HEIGHT)
 		*(ini + i) = (u_int32_t) (255U << 24);
 }
+int	biased_rand(void *param, int distance, uint32_t range)
+{
+	t_data		*data;
+	uint32_t	r;
 
+	data = (t_data *)param;
+	if (distance + range < 0)
+		distance += 2 * range;
+	else if (distance > range)
+		distance -= 2 * range;
+	r = rand() + RAND_MAX / 3 / range * (range + distance);
+	r = r / (RAND_MAX / 3);
+	return ((int) r - 2);
+}
 void loop_hook_function(void *param)
 {
 	t_data		*data;
-	uint32_t	dx;
-	uint32_t	dy;
+	int			tmp;
 	int	ct;
 	
 	data = (t_data *)param;
 	if (data->pause)
 		return ;
+	mlx_get_mouse_pos(data->mlx, &(data->mouse_x), &(data->mouse_y));
+	data->buttons = mlx_is_mouse_down(data->mlx, MLX_MOUSE_BUTTON_LEFT);
 	ct = 0;
-	while (++ct < (1 << 16))
+	while (++ct < (1 << 12))
 	{
 /*		col = (((u_int32_t) rand() << 8) | (255U)); */
 		data->color = (1536 + data->color + (rand() % 3) - 1) % 1536;
-		if (mlx_is_mouse_down(data->mlx, MLX_MOUSE_BUTTON_LEFT))
-		{
-			mlx_get_mouse_pos(data->mlx, &dx, &dy);
-			dx -= data->x;
-			if (dx < - WIDTH / 2)
-				dx += WIDTH;
-			else if (dx > WIDTH / 2)
-				dx -= WIDTH;
-			if (dy < - HEIGHT / 2)
-				dy += HEIGHT;
-			else if (dy > HEIGHT / 2)
-				dy -= HEIGHT;
-		}
-		dx = 2 * rand() / RAND_MAX - 1;
-		dy = 2 * rand() / RAND_MAX - 1;
-		data->x += dx;
-		if (data->x < 0)
-			data->x += WIDTH;
-		data->y += dy;
-		if (data->y < 0)
-			data->y += HEIGHT;
+		tmp = 0;
+		if (data->buttons)
+			tmp = data->mouse_x - data->x;
+		data->x = (WIDTH + data->x + biased_rand(param, tmp, WIDTH / 2)) % WIDTH;
+		tmp = 0;
+		if (data->buttons)
+			tmp = data->mouse_y - data->y;
+		data->y = (HEIGHT + data->y + biased_rand(param, tmp, HEIGHT / 2)) % HEIGHT;
 		mlx_put_pixel(data->img, data->x, data->y, rainbow(data->color));
 	}
 }
