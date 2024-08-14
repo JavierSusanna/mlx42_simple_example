@@ -23,7 +23,7 @@ typedef struct s_data
 	uint32_t	x;
 	uint32_t	y;
 	uint32_t	color;
-	int			pause;
+	int			cls;
 	uint32_t	mouse_x;
 	uint32_t	mouse_y;
 	int			buttons;

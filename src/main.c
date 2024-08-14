@@ -45,23 +45,23 @@ void reset_img(void *param)
 	long		i;
 
 	data = (t_data *)param;
+	data->cls = 0;
 	ini = (uint32_t *)data->img->pixels;
 	i = -1;
 	while (++i < WIDTH * HEIGHT)
 		*(ini + i) = (u_int32_t) (255U << 24);
 }
-int	biased_rand(void *param, int distance, uint32_t range)
+int	biased_rand(int distance, int range)
 {
 	t_data		*data;
 	uint32_t	r;
 
-	data = (t_data *)param;
 	if (distance + range < 0)
 		distance += 2 * range;
 	else if (distance > range)
 		distance -= 2 * range;
 	r = rand() + RAND_MAX / 3 / range * (range + distance);
-	r = r / (RAND_MAX / 3);
+	r /= RAND_MAX / 3;
 	return ((int) r - 2);
 }
 void loop_hook_function(void *param)
@@ -71,23 +71,29 @@ void loop_hook_function(void *param)
 	int	ct;
 	
 	data = (t_data *)param;
-	if (data->pause)
-		return ;
 	mlx_get_mouse_pos(data->mlx, &(data->mouse_x), &(data->mouse_y));
 	data->buttons = mlx_is_mouse_down(data->mlx, MLX_MOUSE_BUTTON_LEFT);
+	if (!data->buttons)
+	{
+		if (data->cls)
+			reset_img(data);
+		return ;
+	}
+	data->x = data->mouse_x;
+	data->y = data->mouse_y;
 	ct = 0;
-	while (++ct < (1 << 12))
+	while (++ct < (1 << 10))
 	{
 /*		col = (((u_int32_t) rand() << 8) | (255U)); */
 		data->color = (1536 + data->color + (rand() % 3) - 1) % 1536;
 		tmp = 0;
 		if (data->buttons)
 			tmp = data->mouse_x - data->x;
-		data->x = (WIDTH + data->x + biased_rand(param, tmp, WIDTH / 2)) % WIDTH;
+		data->x = (WIDTH + data->x + biased_rand(tmp, WIDTH / 2)) % WIDTH;
 		tmp = 0;
 		if (data->buttons)
 			tmp = data->mouse_y - data->y;
-		data->y = (HEIGHT + data->y + biased_rand(param, tmp, HEIGHT / 2)) % HEIGHT;
+		data->y = (HEIGHT + data->y + biased_rand(tmp, HEIGHT / 2)) % HEIGHT;
 		mlx_put_pixel(data->img, data->x, data->y, rainbow(data->color));
 	}
 }
@@ -102,7 +108,7 @@ void ft_on_key(mlx_key_data_t keydata, void *param)
 	if (keydata.action == MLX_PRESS)
 	{
 		if (keydata.key == MLX_KEY_SPACE)
-			data->pause ^= 1;
+			data->cls = 1;
 		//close window, exit program
 		if (keydata.key == MLX_KEY_ESCAPE)
 		{
@@ -117,19 +123,19 @@ int main(int argc, char **argv)
 {
 	t_data data;
 
-	data.mlx = mlx_init(WIDTH, HEIGHT, "Golden Sphere", true);
+	data.mlx = mlx_init(WIDTH, HEIGHT, "Brownian Noise Paint", true);
 	data.img = mlx_new_image(data.mlx, WIDTH, HEIGHT);
 	data.x = WIDTH / 2;
 	data.y = HEIGHT / 2;
 	data.color = rand() % 1536;
-	data.pause = 1;
+	data.cls = 1;
 	reset_img(&data);
-	printf("img reset\n");
+	printf("\n*********************************\n");
+	printf("  Brownian Motion Art.\n  Paint with the mouse.\n  Press SPACE to CLEAR SCREEN.\n");
+	printf("*********************************\n");
 	mlx_image_to_window(data.mlx, data.img, 0, 0);
 	mlx_loop_hook(data.mlx, loop_hook_function, &data);
-	printf("loop_hook\n");
 	mlx_key_hook(data.mlx, &ft_on_key, &data);
-	printf("key_hook\n");
 	mlx_loop(data.mlx);
 	mlx_terminate(data.mlx);
 	return 0;
