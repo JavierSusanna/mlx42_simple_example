@@ -24,6 +24,7 @@ typedef struct s_data
 	uint32_t	y;
 	uint32_t	color;
 	int			cls;
+	unsigned char	size;
 	uint32_t	mouse_x;
 	uint32_t	mouse_y;
 	int			buttons;
